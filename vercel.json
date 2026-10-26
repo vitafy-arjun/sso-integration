@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/auth/vitafy/authorize-url", "destination": "/api/auth/vitafy/authorize-url" },
+    { "source": "/auth/vitafy/token", "destination": "/api/auth/vitafy/token" },
+    { "source": "/integrations/:path*", "destination": "/api/integrations/:path*" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
