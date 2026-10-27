@@ -4,7 +4,7 @@ import {
   createPartnerAuthContext,
   exchangeAuthorizationCode,
   formatHandlerError,
-} from './partnerAuthCore.js';
+} from '../lib/partnerAuthCore.js';
 
 function readJsonBody(req: Connect.IncomingMessage): Promise<Record<string, string>> {
   return new Promise((resolve, reject) => {

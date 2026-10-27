@@ -1,22 +1,6 @@
-import { createRequire } from 'module';
+import { buildEncryptedAuthorizeParams } from './partnerAuthorizeEnvelope.js';
 import { requireGatewayOriginFromEnv } from './gatewayOrigin.js';
-
-const require = createRequire(import.meta.url);
-const { buildEncryptedAuthorizeParams } = require('./partnerAuthorizeEnvelope.mjs') as {
-  buildEncryptedAuthorizeParams: (input: {
-    tenantId: string;
-    jwtPublicKeyPem: string;
-    state: string;
-    codeChallenge: string;
-  }) => { tenant_id: string; authorize_envelope: string };
-};
-const { verifyVitafyIntegrationJwt } = require('./jwtRs256Verify.mjs') as {
-  verifyVitafyIntegrationJwt: (
-    token: string,
-    pem: string,
-    options?: { tenantId?: string; audience?: string; issuer?: string }
-  ) => Record<string, unknown>;
-};
+import { verifyVitafyIntegrationJwt } from './jwtRs256Verify.js';
 
 export type PartnerAuthEnv = Record<string, string | undefined>;
 

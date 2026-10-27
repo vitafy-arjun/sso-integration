@@ -1,19 +1,22 @@
 import crypto from 'crypto';
 
-function decodePart(segment) {
+function decodePart(segment: string): Buffer {
   const base64 = segment.replace(/-/g, '+').replace(/_/g, '/');
   const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
   return Buffer.from(padded, 'base64');
 }
 
-/** Verify Vitafy integration access_token (RS256) with tenant jwtPublicKey PEM. */
-export function verifyVitafyIntegrationJwt(token, publicKeyPem, options = {}) {
+export function verifyVitafyIntegrationJwt(
+  token: string,
+  publicKeyPem: string,
+  options: { tenantId?: string; audience?: string; issuer?: string } = {}
+): Record<string, unknown> {
   const parts = token.split('.');
   if (parts.length !== 3) {
     throw new Error('Invalid JWT format');
   }
   const [headerB64, payloadB64, signatureB64] = parts;
-  const header = JSON.parse(decodePart(headerB64).toString('utf8'));
+  const header = JSON.parse(decodePart(headerB64).toString('utf8')) as { alg?: string };
   if (header.alg !== 'RS256') {
     throw new Error(`Unexpected JWT alg: ${header.alg}`);
   }
@@ -27,7 +30,7 @@ export function verifyVitafyIntegrationJwt(token, publicKeyPem, options = {}) {
     throw new Error('JWT signature verification failed');
   }
 
-  const payload = JSON.parse(decodePart(payloadB64).toString('utf8'));
+  const payload = JSON.parse(decodePart(payloadB64).toString('utf8')) as Record<string, unknown>;
   const now = Math.floor(Date.now() / 1000);
   if (typeof payload.exp === 'number' && payload.exp < now) {
     throw new Error('JWT expired');
@@ -38,7 +41,10 @@ export function verifyVitafyIntegrationJwt(token, publicKeyPem, options = {}) {
   if (options.audience && payload.aud !== options.audience) {
     throw new Error('JWT audience mismatch');
   }
-  if (options.tenantId && String(payload.tenant_id).toLowerCase() !== options.tenantId.toLowerCase()) {
+  if (
+    options.tenantId &&
+    String(payload.tenant_id).toLowerCase() !== options.tenantId.toLowerCase()
+  ) {
     throw new Error('JWT tenant_id mismatch');
   }
   return payload;
