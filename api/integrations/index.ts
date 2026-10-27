@@ -10,32 +10,31 @@ function forwardHeader(req: VercelRequest, name: string): string | undefined {
   return value;
 }
 
+/** Path after `/integrations/` (rewrite preserves original URL on `req.url`). */
+function integrationSubPath(req: VercelRequest): string {
+  const pathname = (req.url ?? '/').split('?')[0] ?? '/';
+  for (const prefix of ['/integrations/', '/api/integrations/']) {
+    const index = pathname.indexOf(prefix);
+    if (index !== -1) {
+      return pathname.slice(index + prefix.length).replace(/^\/+/, '');
+    }
+  }
+  return '';
+}
+
+function queryStringFromRequest(req: VercelRequest): string {
+  const raw = req.url ?? '';
+  const q = raw.indexOf('?');
+  return q === -1 ? '' : raw.slice(q);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
     const env = partnerAuthEnvFromProcess();
     const gateway = requireGatewayOriginFromEnv(env.VITE_GATEWAY_ORIGIN);
-    const pathParam = req.query.path;
-    const segments = Array.isArray(pathParam)
-      ? pathParam
-      : typeof pathParam === 'string'
-        ? [pathParam]
-        : [];
-
-    const upstreamPath = segments.map((segment) => encodeURIComponent(segment)).join('/');
-    const upstream = new URL(`${gateway.replace(/\/$/, '')}/integrations/${upstreamPath}`);
-
-    for (const [key, value] of Object.entries(req.query)) {
-      if (key === 'path') {
-        continue;
-      }
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          upstream.searchParams.append(key, item);
-        }
-      } else if (value != null) {
-        upstream.searchParams.set(key, String(value));
-      }
-    }
+    const subPath = integrationSubPath(req);
+    const base = `${gateway.replace(/\/$/, '')}/integrations/${subPath}`.replace(/\/$/, '');
+    const upstream = `${base}${queryStringFromRequest(req)}`;
 
     const method = req.method ?? 'GET';
     const headers = new Headers();
@@ -62,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             : undefined;
     }
 
-    const upstreamResponse = await fetch(upstream.toString(), { method, headers, body });
+    const upstreamResponse = await fetch(upstream, { method, headers, body });
     const text = await upstreamResponse.text();
     res.status(upstreamResponse.status);
     const upstreamContentType = upstreamResponse.headers.get('content-type');
