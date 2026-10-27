@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireGatewayOriginFromEnv } from '../../shared/gatewayOrigin.js';
-import { formatHandlerError, partnerAuthEnvFromProcess } from '../../server/partnerAuthCore.js';
+import { requireGatewayOriginFromEnv } from '../../lib/gatewayOrigin.js';
+import { formatHandlerError, partnerAuthEnvFromProcess } from '../../lib/partnerAuthCore.js';
 
 function forwardHeader(req: VercelRequest, name: string): string | undefined {
   const value = req.headers[name.toLowerCase()];

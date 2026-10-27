@@ -4,7 +4,7 @@ import {
   createPartnerAuthContext,
   formatHandlerError,
   partnerAuthEnvFromProcess,
-} from '../../../server/partnerAuthCore.js';
+} from '../../../lib/partnerAuthCore.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (req.method !== 'GET') {

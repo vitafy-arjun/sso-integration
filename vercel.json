@@ -1,6 +1,11 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "lib/**"
+    }
+  },
   "rewrites": [
     { "source": "/auth/vitafy/authorize-url", "destination": "/api/auth/vitafy/authorize-url" },
     { "source": "/auth/vitafy/token", "destination": "/api/auth/vitafy/token" },
